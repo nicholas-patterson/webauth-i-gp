@@ -16,7 +16,7 @@ server.get("/", (req, res) => {
   res.send("It's alive!");
 });
 
-server.post("/api/register", (req, res) => {
+server.post("/api/register", validateCredentials, (req, res) => {
   let { username, password } = req.body;
 
   const hash = bcrypt.hashSync(password, 16);
@@ -30,7 +30,7 @@ server.post("/api/register", (req, res) => {
     });
 });
 
-server.post("/api/login", (req, res) => {
+server.post("/api/login", validateCredentials, (req, res) => {
   let { username, password } = req.body;
 
   Users.findBy({ username })
@@ -65,6 +65,14 @@ server.get("/hash", (req, res) => {
   const hash = bcrypt.hashSync(name, salt);
   res.send(`the hash for ${name} is ${hash}`);
 });
+
+function validateCredentials(req, res, next) {
+  if (!req.username || !req.password) {
+    res.status(401).json({ error: "Invalid Credentials" });
+  } else {
+    next();
+  }
+}
 
 const port = process.env.PORT || 5000;
 server.listen(port, () => console.log(`\n** Running on port ${port} **\n`));
