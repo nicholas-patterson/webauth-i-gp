@@ -17,9 +17,11 @@ server.get("/", (req, res) => {
 });
 
 server.post("/api/register", (req, res) => {
-  let user = req.body;
+  let { username, password } = req.body;
 
-  Users.add(user)
+  const hash = bcrypt.hashSync(password, 16);
+
+  Users.add({ username, password: hash })
     .then(saved => {
       res.status(201).json(saved);
     })
@@ -34,7 +36,9 @@ server.post("/api/login", (req, res) => {
   Users.findBy({ username })
     .first()
     .then(user => {
-      if (user) {
+      const authenticate = bcrypt.compareSync(username, user.password);
+
+      if (authenticate) {
         res.status(200).json({ message: `Welcome ${user.username}!` });
       } else {
         res.status(401).json({ message: "Invalid Credentials" });
@@ -58,7 +62,7 @@ server.get("/hash", (req, res) => {
 
   // hash the name
   const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(salt);
+  const hash = bcrypt.hashSync(name, salt);
   res.send(`the hash for ${name} is ${hash}`);
 });
 
