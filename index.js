@@ -36,7 +36,7 @@ server.post("/api/login", (req, res) => {
   Users.findBy({ username })
     .first()
     .then(user => {
-      const authenticate = bcrypt.compareSync(username, user.password);
+      const authenticate = bcrypt.compareSync(password, user.password);
 
       if (authenticate) {
         res.status(200).json({ message: `Welcome ${user.username}!` });
